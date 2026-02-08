@@ -7,11 +7,7 @@
 import sys
 import os
 
-# Adds the current directory to the python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Now perform your imports
-from modules.prediction import show_prediction_page
 
 # # Page configuration
 # st.set_page_config(
@@ -295,10 +291,10 @@ if page == "🏠 Home":
 
 # Churn Prediction Page
 elif page == "🔮 Churn Prediction":
-    from modules.prediction import show_prediction_page
+    from pages.prediction import show_prediction_page
     show_prediction_page()
 
 # Analytics Page
 elif page == "📊 Analytics":
-    from modules.historical import show_historical_page
+    from pages.historical import show_historical_page
     show_historical_page()
