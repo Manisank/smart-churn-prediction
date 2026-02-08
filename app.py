@@ -4,6 +4,14 @@
 
 # # Load environment variables
 # load_dotenv()
+import sys
+import os
+
+# Adds the current directory to the python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Now perform your imports
+from modules.prediction import show_prediction_page
 
 # # Page configuration
 # st.set_page_config(
