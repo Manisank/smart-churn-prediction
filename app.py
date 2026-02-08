@@ -298,7 +298,7 @@
 # elif page == "📊 Analytics":
 #     from pages.historical import show_historical_page
 #     show_historical_page()
-44import streamlit as st
+import streamlit as st
 import os
 import sys
 from dotenv import load_dotenv
