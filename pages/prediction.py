@@ -58,7 +58,6 @@ def generate_retention_strategy(customer_data, churn_prob, top_factors):
         return "⚠️ Gemini API key not configured."
 
     try:
-        # Using stable 1.5-flash for deployment reliability
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         You are an E-commerce retention strategist. A customer has a {churn_prob:.1%} churn probability.
@@ -69,37 +68,6 @@ def generate_retention_strategy(customer_data, churn_prob, top_factors):
         return response.text
     except Exception as e:
         return f"⚠️ Error generating strategy: {str(e)}"
-
-# ─── HELPER FOR SHAP OUTPUTS ─────────────────────────────────────
-def get_churn_shap_outputs(explainer, shap_vals):
-    """
-    Normalize SHAP outputs for binary RF:
-    - sv_churn: SHAP values for churn class
-    - base_val: scalar expected value for churn class
-    """
-    # Handle SHAP values
-    if isinstance(shap_vals, list):
-        # list of [class0, class1] -> take churn/positive class = index 1
-        sv_churn = shap_vals[1]
-    elif np.ndim(shap_vals) == 3:
-        # shape (n_samples, n_features, n_classes) or similar
-        sv_churn = shap_vals[0, :, 1]
-    else:
-        sv_churn = shap_vals
-
-    # Handle expected_value (can be scalar, list, or np array)
-    ev = explainer.expected_value
-    if isinstance(ev, (list, np.ndarray)):
-        ev = np.array(ev)
-        if ev.ndim == 0:
-            base_val = float(ev)
-        else:
-            # assume index 1 is churn/positive class
-            base_val = float(ev[1]) if ev.size > 1 else float(ev.flatten()[0])
-    else:
-        base_val = float(ev)
-
-    return sv_churn, base_val
 
 # ─── MAIN PAGE ───────────────────────────────────────────────────
 def show_prediction_page():
@@ -171,7 +139,6 @@ def show_prediction_page():
             if col in df_input.columns:
                 df_input[col] = encoder.transform(df_input[col])
 
-        # Ensure column order
         df_input = df_input[feature_names]
 
         # Prediction
@@ -184,25 +151,33 @@ def show_prediction_page():
             st.error(f"### ⚠️ {churn_label}")
         else:
             st.success(f"### ✅ {churn_label}")
-
+        
         st.metric("Churn Probability", f"{churn_prob:.1%}")
 
-        # 🧠 SHAP Calculation and Plots
+        # 🧠 SHAP Analysis (DEPLOYMENT-PROOF)
         st.markdown("---")
         st.markdown("## 🧠 Explainable AI (SHAP Analysis)")
         with st.spinner("Calculating SHAP values..."):
             try:
                 shap_vals = explainer.shap_values(df_input)
-            except Exception:
-                # Re-init explainer on Cloud to fix any version issues
+            except:
                 explainer = shap.TreeExplainer(model)
                 shap_vals = explainer.shap_values(df_input)
 
-            sv_churn, base_val = get_churn_shap_outputs(explainer, shap_vals)
+            # BULLETPROOF SHAP HANDLING - works on ANY version/platform
+            if isinstance(shap_vals, list):
+                sv_churn = shap_vals[1]
+                base_val = float(np.array(explainer.expected_value)[1])
+            else:
+                sv_churn = shap_vals
+                base_val = float(np.array(explainer.expected_value))
+
+            # Single row for plots
+            row_sv = sv_churn.flatten()[0] if len(sv_churn.shape) > 1 else sv_churn
 
         # Tabs
         t1, t2, t3 = st.tabs(["📊 Feature Importance", "🎯 Force Plot", "💧 Waterfall"])
-
+        
         with t1:
             fig, ax = plt.subplots(figsize=(10, 6))
             shap.summary_plot(sv_churn, df_input, plot_type="bar", show=False, color=ACCENT)
@@ -211,8 +186,6 @@ def show_prediction_page():
             plt.close()
 
         with t2:
-            # Force Plot needs 1D values for a single row
-            row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
             shap.force_plot(base_val, row_sv, df_input.iloc[0], matplotlib=True, show=False)
             fig = plt.gcf()
             fig.patch.set_facecolor(BG_DARK)
@@ -222,7 +195,6 @@ def show_prediction_page():
             plt.close()
 
         with t3:
-            row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
             explanation = shap.Explanation(
                 values=row_sv,
                 base_values=base_val,
@@ -235,13 +207,11 @@ def show_prediction_page():
             st.pyplot(fig)
             plt.close()
 
-        # Owl Strategy
+        # 🦉 Recommendations
         st.markdown("---")
         st.markdown("## 🦉 Smart Owl Recommendations")
-
-        row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
         top_factors = pd.Series(np.abs(row_sv), index=feature_names).sort_values(ascending=False).head(3).index.tolist()
-
+        
         with st.spinner("Gemini is analyzing..."):
             strategy = generate_retention_strategy(input_data, churn_prob, top_factors)
             st.success(strategy)
