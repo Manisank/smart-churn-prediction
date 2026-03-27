@@ -559,13 +559,30 @@ def show_prediction_page():
 
         st.markdown("---")
 
-        # ── SHAP — calculate ONCE ─────────────────────────────────
+# ── SHAP — calculate ONCE ─────────────────────────────────
         st.markdown("## 🧠 Explainable AI (SHAP Analysis)")
 
         with st.spinner("Calculating SHAP values..."):
-            shap_values = explainer.shap_values(df_input)
-            sv_churn    = get_shap_churn_values(shap_values)
-            base_val    = get_shap_base_value(explainer)
+            try:
+                # Try using the loaded explainer first
+                shap_values = explainer.shap_values(df_input)
+            except AttributeError:
+                # If 'TreeEnsemble' error occurs, re-initialize a fresh explainer
+                # This bypasses the version mismatch in the .pkl file
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(df_input)
+            
+            # Handle class indexing for Random Forest
+            # RF returns a list [Stay_Values, Churn_Values]
+            if isinstance(shap_values, list):
+                sv_churn = shap_values[1]
+                # Update base_val for Churn class (index 1)
+                ev = explainer.expected_value
+                base_val = float(ev[1]) if isinstance(ev, (list, np.ndarray)) else float(ev)
+            else:
+                # For some SHAP versions/models that return a single array
+                sv_churn = shap_values
+                base_val = float(explainer.expected_value)
 
         tab1, tab2, tab3 = st.tabs([
             "📊 Feature Importance",
