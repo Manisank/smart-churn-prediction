@@ -70,6 +70,37 @@ def generate_retention_strategy(customer_data, churn_prob, top_factors):
     except Exception as e:
         return f"⚠️ Error generating strategy: {str(e)}"
 
+# ─── HELPER FOR SHAP OUTPUTS ─────────────────────────────────────
+def get_churn_shap_outputs(explainer, shap_vals):
+    """
+    Normalize SHAP outputs for binary RF:
+    - sv_churn: SHAP values for churn class
+    - base_val: scalar expected value for churn class
+    """
+    # Handle SHAP values
+    if isinstance(shap_vals, list):
+        # list of [class0, class1] -> take churn/positive class = index 1
+        sv_churn = shap_vals[1]
+    elif np.ndim(shap_vals) == 3:
+        # shape (n_samples, n_features, n_classes) or similar
+        sv_churn = shap_vals[0, :, 1]
+    else:
+        sv_churn = shap_vals
+
+    # Handle expected_value (can be scalar, list, or np array)
+    ev = explainer.expected_value
+    if isinstance(ev, (list, np.ndarray)):
+        ev = np.array(ev)
+        if ev.ndim == 0:
+            base_val = float(ev)
+        else:
+            # assume index 1 is churn/positive class
+            base_val = float(ev[1]) if ev.size > 1 else float(ev.flatten()[0])
+    else:
+        base_val = float(ev)
+
+    return sv_churn, base_val
+
 # ─── MAIN PAGE ───────────────────────────────────────────────────
 def show_prediction_page():
     st.title("🔮 Customer Churn Prediction")
@@ -77,7 +108,8 @@ def show_prediction_page():
     st.markdown("---")
 
     model, encoders, feature_names, explainer = load_model_artifacts()
-    if model is None: return
+    if model is None:
+        return
 
     st.markdown("## 📝 Enter Customer Details")
     col1, col2, col3 = st.columns(3)
@@ -112,21 +144,37 @@ def show_prediction_page():
 
     if st.button("🔮 Predict Churn Risk", use_container_width=True):
         input_data = {
-            'Tenure': tenure, 'PreferredLoginDevice': preferred_login_device, 'CityTier': city_tier,
-            'WarehouseToHome': warehouse_to_home, 'PreferredPaymentMode': preferred_payment_mode,
-            'Gender': gender, 'HourSpendOnApp': hours_on_app, 'NumberOfDeviceRegistered': device_registered,
-            'PreferedOrderCat': preferred_order_cat, 'SatisfactionScore': satisfaction_score,
-            'MaritalStatus': marital_status, 'NumberOfAddress': address_count, 'Complain': complain,
-            'OrderAmountHikeFromlastYear': 15, 'CouponUsed': 3, 'OrderCount': order_count,
-            'DaySinceLastOrder': day_since_last_order, 'CashbackAmount': cashback_amount
+            'Tenure': tenure,
+            'PreferredLoginDevice': preferred_login_device,
+            'CityTier': city_tier,
+            'WarehouseToHome': warehouse_to_home,
+            'PreferredPaymentMode': preferred_payment_mode,
+            'Gender': gender,
+            'HourSpendOnApp': hours_on_app,
+            'NumberOfDeviceRegistered': device_registered,
+            'PreferedOrderCat': preferred_order_cat,
+            'SatisfactionScore': satisfaction_score,
+            'MaritalStatus': marital_status,
+            'NumberOfAddress': address_count,
+            'Complain': complain,
+            'OrderAmountHikeFromlastYear': 15,
+            'CouponUsed': 3,
+            'OrderCount': order_count,
+            'DaySinceLastOrder': day_since_last_order,
+            'CashbackAmount': cashback_amount
         }
 
         df_input = pd.DataFrame([input_data])
+
+        # Apply encoders
         for col, encoder in encoders.items():
             if col in df_input.columns:
                 df_input[col] = encoder.transform(df_input[col])
 
+        # Ensure column order
         df_input = df_input[feature_names]
+
+        # Prediction
         churn_prob = model.predict_proba(df_input)[0][1]
         churn_label = "HIGH RISK" if churn_prob > 0.5 else "LOW RISK"
 
@@ -136,38 +184,25 @@ def show_prediction_page():
             st.error(f"### ⚠️ {churn_label}")
         else:
             st.success(f"### ✅ {churn_label}")
-        
+
         st.metric("Churn Probability", f"{churn_prob:.1%}")
 
-        # 🧠 SHAP Calculation Fixes
+        # 🧠 SHAP Calculation and Plots
         st.markdown("---")
         st.markdown("## 🧠 Explainable AI (SHAP Analysis)")
         with st.spinner("Calculating SHAP values..."):
             try:
                 shap_vals = explainer.shap_values(df_input)
             except Exception:
-                # Re-init explainer on Cloud to fix 'threshold_types' bug
-                new_explainer = shap.TreeExplainer(model)
-                shap_vals = new_explainer.shap_values(df_input)
-                explainer = new_explainer
+                # Re-init explainer on Cloud to fix any version issues
+                explainer = shap.TreeExplainer(model)
+                shap_vals = explainer.shap_values(df_input)
 
-            # Fix for RF Multi-class [Stay, Churn]
-            if isinstance(shap_vals, list):
-                sv_churn = shap_vals[1]
-                ev = explainer.expected_value
-                base_val = float(ev[1]) if isinstance(ev, (list, np.ndarray)) else float(ev)
-            elif len(shap_vals.shape) == 3:
-                sv_churn = shap_vals[0, :, 1]
-                ev = explainer.expected_value
-                base_val = float(ev[1]) if isinstance(ev, (list, np.ndarray)) else float(ev)
-            else:
-                sv_churn = shap_vals
-                ev = explainer.expected_value
-                base_val = float(ev[1]) if (isinstance(ev, (list, np.ndarray)) and len(ev)>1) else float(ev)
+            sv_churn, base_val = get_churn_shap_outputs(explainer, shap_vals)
 
         # Tabs
-        t1, t2, t3 = st.tabs(["📊 Importance", "🎯 Force Plot", "💧 Waterfall"])
-        
+        t1, t2, t3 = st.tabs(["📊 Feature Importance", "🎯 Force Plot", "💧 Waterfall"])
+
         with t1:
             fig, ax = plt.subplots(figsize=(10, 6))
             shap.summary_plot(sv_churn, df_input, plot_type="bar", show=False, color=ACCENT)
@@ -176,18 +211,24 @@ def show_prediction_page():
             plt.close()
 
         with t2:
-            # Force Plot needs 1D values
-            flat_sv = sv_churn[0] if len(sv_churn.shape) > 1 else sv_churn
-            shap.force_plot(base_val, flat_sv, df_input.iloc[0], matplotlib=True, show=False)
+            # Force Plot needs 1D values for a single row
+            row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
+            shap.force_plot(base_val, row_sv, df_input.iloc[0], matplotlib=True, show=False)
             fig = plt.gcf()
             fig.patch.set_facecolor(BG_DARK)
-            for ax in fig.get_axes(): ax.set_facecolor(BG_DARK)
+            for ax in fig.get_axes():
+                ax.set_facecolor(BG_DARK)
             st.pyplot(fig)
             plt.close()
 
         with t3:
-            flat_sv = sv_churn[0] if len(sv_churn.shape) > 1 else sv_churn
-            explanation = shap.Explanation(values=flat_sv, base_values=base_val, data=df_input.iloc[0].values, feature_names=feature_names)
+            row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
+            explanation = shap.Explanation(
+                values=row_sv,
+                base_values=base_val,
+                data=df_input.iloc[0].values,
+                feature_names=feature_names
+            )
             fig, ax = plt.subplots(figsize=(10, 6))
             shap.waterfall_plot(explanation, show=False)
             apply_dark_axes(fig, plt.gca())
@@ -197,10 +238,10 @@ def show_prediction_page():
         # Owl Strategy
         st.markdown("---")
         st.markdown("## 🦉 Smart Owl Recommendations")
-        # Calc top risk factors
-        flat_sv = sv_churn[0] if len(sv_churn.shape) > 1 else sv_churn
-        top_factors = pd.Series(np.abs(flat_sv), index=feature_names).sort_values(ascending=False).head(3).index.tolist()
-        
+
+        row_sv = sv_churn[0] if np.ndim(sv_churn) > 1 else sv_churn
+        top_factors = pd.Series(np.abs(row_sv), index=feature_names).sort_values(ascending=False).head(3).index.tolist()
+
         with st.spinner("Gemini is analyzing..."):
             strategy = generate_retention_strategy(input_data, churn_prob, top_factors)
             st.success(strategy)
