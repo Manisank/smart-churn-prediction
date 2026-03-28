@@ -33,8 +33,9 @@ def apply_dark_axes(fig, ax):
 
 # ─── SHAP HELPERS ────────────────────────────────────────────────
 def get_shap_churn_values(shap_values):
+    # Handles both list (older versions) and 3D arrays (newer versions)
     if isinstance(shap_values, list):
-        return shap_values[1]  # For Random Forest classifiers
+        return shap_values[1] 
     elif len(shap_values.shape) == 3:
         return shap_values[:, :, 1]
     return shap_values
@@ -53,7 +54,7 @@ def load_model_artifacts():
         explainer     = joblib.load('models/shap_explainer.pkl')
         encoders      = joblib.load('models/encoders.pkl')
         feature_names = joblib.load('models/feature_names.pkl')
-        st.success(f"✅ Model loaded successfully")
+        st.success(f"✅ Model artifacts loaded")
         return model, encoders, feature_names, explainer
     except Exception as e:
         st.error(f"❌ Error loading artifacts: {e}")
@@ -66,41 +67,25 @@ def configure_gemini():
         genai.configure(api_key=api_key)
         return True
     return False
+
 def generate_retention_strategy(customer_data, churn_prob, top_factors):
     if not configure_gemini():
-        return "⚠️ Gemini API key not configured. Please add it to your .env file."
+        return "⚠️ Gemini API key not configured. Please check your .env file."
 
     try:
-        model = genai.GenerativeModel('gemini-2.5-flash-lite')
-
+        model = genai.GenerativeModel('gemini-1.5-flash') # Using stable flash model
         prompt = f"""
         You are an E-commerce retention strategist. A customer has a {churn_prob:.1%} churn probability.
-
-        Customer Profile:
-        - Tenure: {customer_data.get('Tenure', 'N/A')} months
-        - Cashback: ${customer_data.get('CashbackAmount', 'N/A')}
-        - Complaints: {customer_data.get('Complain', 'N/A')}
-        - Days Since Last Order: {customer_data.get('DaySinceLastOrder', 'N/A')}
-        - Preferred Category: {customer_data.get('PreferredOrderCat', 'N/A')}
-
+        Customer Profile: {customer_data}
         Top Risk Factors: {', '.join(top_factors)}
 
-        Provide specific, actionable retention strategies in bullet points. Be concise.
-
-        Include:
-        - 3-5 immediate actions (with specific offers/discounts)
-        - Why each strategy targets the risk factors
-        - Expected outcomes
-
-        Keep it under 150 words total.
+        Provide 3-5 specific, actionable retention strategies in bullet points. Be concise.
+        Include why each strategy targets the risk factors and the expected outcomes.
         """
-
         response = model.generate_content(prompt)
         return response.text
-
     except Exception as e:
-        return f"⚠️ Error generating strategy: {str(e)}"
-
+        return f"⚠️ AI Analysis error: {str(e)}"
 
 # ─── MAIN PAGE ───────────────────────────────────────────────────
 def show_prediction_page():
@@ -144,26 +129,13 @@ def show_prediction_page():
         coupons = st.number_input("Coupons Used", 0, 20, 3)
 
     if st.button("🔮 Predict Churn Risk", use_container_width=True):
-        # ✅ FIXED: Added missing features to prevent KeyError
         input_data = {
-            'Tenure': tenure,
-            'PreferredLoginDevice': pref_login,
-            'CityTier': city_tier,
-            'WarehouseToHome': warehouse,
-            'PreferredPaymentMode': payment,
-            'Gender': gender,
-            'HourSpendOnApp': hours,
-            'NumberOfDeviceRegistered': devices,
-            'PreferedOrderCat': cat,
-            'SatisfactionScore': sat_score,
-            'MaritalStatus': marital,
-            'NumberOfAddress': addresses,
-            'Complain': complain,
-            'OrderAmountHikeFromlastYear': hike,
-            'CouponUsed': coupons,
-            'OrderCount': order_count,
-            'DaySinceLastOrder': days_since,
-            'CashbackAmount': cashback
+            'Tenure': tenure, 'PreferredLoginDevice': pref_login, 'CityTier': city_tier,
+            'WarehouseToHome': warehouse, 'PreferredPaymentMode': payment, 'Gender': gender,
+            'HourSpendOnApp': hours, 'NumberOfDeviceRegistered': devices, 'PreferedOrderCat': cat,
+            'SatisfactionScore': sat_score, 'MaritalStatus': marital, 'NumberOfAddress': addresses,
+            'Complain': complain, 'OrderAmountHikeFromlastYear': hike, 'CouponUsed': coupons,
+            'OrderCount': order_count, 'DaySinceLastOrder': days_since, 'CashbackAmount': cashback
         }
 
         df_input = pd.DataFrame([input_data])
@@ -175,27 +147,36 @@ def show_prediction_page():
         churn_prob = model.predict_proba(df_input)[0][1]
         churn_label = "HIGH RISK" if churn_prob > 0.5 else "LOW RISK"
 
+        # 🎯 Results Display
         st.markdown("## 🎯 Prediction Results")
-        st.metric("Churn Probability", f"{churn_prob:.1%}")
-        if churn_prob > 0.5: st.error(f"### ⚠️ {churn_label}")
-        else: st.success(f"### ✅ {churn_label}")
+        res_col1, res_col2 = st.columns([1, 1])
+        with res_col1:
+            st.metric("Churn Probability", f"{churn_prob:.1%}")
+        with res_col2:
+            if churn_prob > 0.5: st.error(f"### ⚠️ Status: {churn_label}")
+            else: st.success(f"### ✅ Status: {churn_label}")
 
         st.markdown("---")
         st.markdown("## 🧠 Explainable AI (SHAP)")
 
-        with st.spinner("Calculating SHAP..."):
-            try:
-                shap_values = explainer.shap_values(df_input)
-            except:
-                explainer = shap.TreeExplainer(model)
-                shap_values = explainer.shap_values(df_input)
-            
+        with st.spinner("Analyzing prediction drivers..."):
+            shap_values = explainer.shap_values(df_input)
             sv_churn = get_shap_churn_values(shap_values)
             base_val = get_shap_base_value(explainer)
 
-        tab1, tab2 = st.tabs(["📊 Importance", "🎯 Force Plot"])
+            # Create SHAP Explanation object for Waterfall
+            # This handles both 1D and 2D sv_churn structures
+            exp = shap.Explanation(
+                values=sv_churn[0] if len(sv_churn.shape) > 1 else sv_churn, 
+                base_values=base_val, 
+                data=df_input.iloc[0], 
+                feature_names=feature_names
+            )
+
+        tab1, tab2, tab3 = st.tabs(["📊 Feature Importance", "💧 Waterfall Analysis", "🐝 SHAP Summary"])
         
         with tab1:
+            st.markdown("### Global Importance")
             fig, ax = plt.subplots(figsize=(10, 6))
             shap.summary_plot(sv_churn, df_input, plot_type="bar", show=False, color=ACCENT)
             apply_dark_axes(fig, plt.gca())
@@ -203,14 +184,29 @@ def show_prediction_page():
             plt.close()
 
         with tab2:
-            shap.force_plot(base_val, sv_churn[0], df_input.iloc[0], matplotlib=True, show=False)
-            fig = plt.gcf()
-            fig.patch.set_facecolor(BG_DARK)
-            for ax in fig.get_axes(): ax.set_facecolor(BG_DARK)
+            st.markdown("### Individual Breakdown (Waterfall)")
+            fig, ax = plt.subplots(figsize=(10, 6))
+            shap.waterfall_plot(exp, show=False)
+            apply_dark_axes(fig, plt.gca())
+            st.pyplot(fig)
+            plt.close()
+
+        with tab3:
+            st.markdown("### Summary Plot (Beeswarm)")
+            fig, ax = plt.subplots(figsize=(10, 6))
+            # Summary plot needs the full SHAP values for the sample
+            shap.summary_plot(sv_churn, df_input, show=False)
+            apply_dark_axes(fig, plt.gca())
             st.pyplot(fig)
             plt.close()
 
         # Recommendation logic
         top_factors = pd.Series(np.abs(sv_churn[0]), index=feature_names).nlargest(3).index.tolist()
-        st.markdown("## 🦉 Smart Recommendations")
-        st.info(generate_retention_strategy(input_data, churn_prob, top_factors))
+        st.markdown("## 🦉 Smart Owl Recommendations")
+        with st.status("Gemini analyzing retention strategy...", expanded=True):
+            strategy = generate_retention_strategy(input_data, churn_prob, top_factors)
+            st.markdown(strategy)
+
+# Execute
+if __name__ == "__main__":
+    show_prediction_page()
