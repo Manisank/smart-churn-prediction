@@ -1,3 +1,4 @@
+
 /* ═══════════════════════════════════════════════
    IMPORT FONT
 ═══════════════════════════════════════════════ */
@@ -39,8 +40,149 @@ button[kind="header"] {
     display: none !important;
 }
 
+/* ═══════════════════════════════════════════════
+   FIX 2: Navigation radio buttons — show text
+═══════════════════════════════════════════════ */
 
+/* Remove default Streamlit radio pill/circle */
+[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] {
+    display: none !important;
+}
 
+/* Target the actual label container */
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 0 0.8rem !important;
+}
+
+/* Each nav item */
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.65rem 1rem !important;
+    border-radius: 10px !important;
+    border: 1px solid #1e3a5f !important;
+    background: rgba(255,255,255,0.02) !important;
+    color: #94a3b8 !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+}
+
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
+    background: rgba(99, 102, 241, 0.12) !important;
+    border-color: #6366f1 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Selected nav item */
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(90deg, rgba(99,102,241,0.22), rgba(99,102,241,0.05)) !important;
+    border-color: #6366f1 !important;
+    color: #a5b4fc !important;
+    font-weight: 600 !important;
+}
+
+/* The text span inside label */
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label > div:last-child,
+[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
+    color: inherit !important;
+    font-size: 0.88rem !important;
+    font-weight: inherit !important;
+    margin: 0 !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Hide "Navigate" label above the radio group */
+[data-testid="stSidebar"] .stRadio > label {
+    display: none !important;
+}
+/* Remove the default top padding gap that causes white flash */
+.stApp > header {
+    background: transparent !important;
+}
+
+/* ═══════════════════════════════════════════════
+   FIX: Sidebar radio nav buttons — make visible
+═══════════════════════════════════════════════ */
+
+/* Container */
+[data-testid="stSidebar"] .stRadio > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 0 0.5rem !important;
+}
+/* ═══════════════════════════════════════════════
+   NAV: Hide default Streamlit nav buttons
+   (we use custom HTML for visuals)
+═══════════════════════════════════════════════ */
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    height: 52px !important;
+    margin-top: -52px !important;
+    width: calc(100% - 1.6rem) !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+}
+/* Each radio option wrapper */
+[data-testid="stSidebar"] .stRadio > div > label {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid #1e3a5f !important;
+    border-radius: 10px !important;
+    padding: 0.65rem 1rem !important;
+    color: #94a3b8 !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+[data-testid="stSidebar"] .stRadio > div > label:hover {
+    background: rgba(99,102,241,0.12) !important;
+    border-color: #6366f1 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Active/selected nav item */
+[data-testid="stSidebar"] .stRadio > div > label:has(input:checked) {
+    background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(99,102,241,0.05)) !important;
+    border-color: #6366f1 !important;
+    color: #a5b4fc !important;
+    font-weight: 600 !important;
+}
+
+/* Hide the actual radio circle dot */
+[data-testid="stSidebar"] .stRadio > div > label > div:first-child {
+    display: none !important;
+}
+
+/* "Navigate" label — hide it */
+[data-testid="stSidebar"] .stRadio > label {
+    display: none !important;
+}
+/* Main app background */
+.stApp {
+    background: #050d1a !important;
+    color: #e2e8f0 !important;
+}
+
+/* Main content area */
+.main .block-container {
+    background: #050d1a !important;
+    padding: 2rem 3rem !important;
+    max-width: 1400px !important;
+}
 
 /* ═══════════════════════════════════════════════
    SIDEBAR
@@ -57,6 +199,32 @@ button[kind="header"] {
 [data-testid="stSidebarContent"] {
     background: transparent !important;
     padding: 0 !important;
+}
+
+/* Sidebar radio buttons */
+[data-testid="stSidebar"] .stRadio label {
+    background: transparent !important;
+    color: #94a3b8 !important;
+    padding: 0.6rem 1rem !important;
+    border-radius: 8px !important;
+    margin: 2px 0 !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    display: block !important;
+}
+
+[data-testid="stSidebar"] .stRadio label:hover {
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: #e2e8f0 !important;
+}
+
+[data-testid="stSidebar"] .stRadio [data-checked="true"] label,
+[data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) {
+    background: linear-gradient(90deg, rgba(99,102,241,0.25), rgba(99,102,241,0.05)) !important;
+    color: #a5b4fc !important;
+    border-left: 3px solid #6366f1 !important;
 }
 
 /* Hide default radio circles */
@@ -440,4 +608,92 @@ pre {
     border-radius: 10px !important;
     padding: 1rem !important;
 }
+/* ═══════════════════════════════════════════════
+   FINAL FIX: FORCE SIDEBAR RADIO TEXT VISIBILITY
+   (Overrides EVERYTHING above)
+═══════════════════════════════════════════════ */
 
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    color: #e2e8f0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] label span,
+section[data-testid="stSidebar"] div[role="radiogroup"] label p,
+section[data-testid="stSidebar"] div[role="radiogroup"] label div {
+    color: #e2e8f0 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Selected item highlight */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) span,
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p,
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div {
+    color: #a5b4fc !important;
+    font-weight: 700 !important;
+}
+
+/* Radio accent color */
+section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
+    accent-color: #6366f1 !important;
+}
+/* ═══════════════════════════════════════════════
+   FINAL SIDEBAR NAV (CLEAN + WORKING)
+═══════════════════════════════════════════════ */
+
+section[data-testid="stSidebar"] [data-baseweb="radio"] {
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 0.8rem;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid #2a4a7a;
+    border-radius: 12px;
+    padding: 0.7rem 1rem;
+
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Text always visible */
+section[data-testid="stSidebar"] div[role="radiogroup"] label * {
+    color: #ffffff !important;
+}
+
+/* Hover */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background: rgba(99,102,241,0.25);
+    border-color: #6366f1;
+    transform: translateX(3px);
+}
+
+/* Selected */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border-color: #818cf8;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.5);
+}
+
+/* Hide "Navigate" */
+[data-testid="stSidebar"] .stRadio > label {
+    display: none !important;
+}
