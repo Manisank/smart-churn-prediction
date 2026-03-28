@@ -855,61 +855,128 @@ st.sidebar.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 # ─── NAVIGATION (FIXED TEXT VISIBILITY) ─────────────────────────
 
 st.sidebar.markdown("""
 <style>
-/* 1. Base label style - ensure it's a block that can contain text */
+/* 1. Reset the radio button container */
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+/* 2. Style the boxes */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    background-color: rgba(255, 255, 255, 0.08) !important; 
-    border: 1px solid #2a4a7a !important;
+    background-color: rgba(255, 255, 255, 0.05) !important; 
+    border: 1px solid #1e3a5f !important;
     border-radius: 12px !important;
     padding: 0.7rem 1rem !important;
-    margin-bottom: 8px !important;
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
     cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
-/* 2. CRITICAL: Force the text container to be visible after a click */
-section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* 3. Force the actual page name text to be white */
+/* 3. THE FIX: Force the Page Name Text to be Visible and White */
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
     color: #ffffff !important;
     font-size: 0.95rem !important;
     font-weight: 600 !important;
-    opacity: 1 !important;
     visibility: visible !important;
-    margin: 0 !important;
     display: block !important;
+    opacity: 1 !important;
+    margin: 0 !important;
 }
 
-/* 4. Selected state gradient */
+/* 4. Hide the default radio circle */
+section[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
+    display: none !important;
+}
+
+/* 5. Selected state */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
     background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
     border-color: #818cf8 !important;
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
 }
-
-/* 5. Hide the default ugly radio circle */
-section[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
-    display: none !important;
-}
 </style>
 """, unsafe_allow_html=True)
+
 page_labels = ["🏠 Home", "🔮 Churn Prediction", "📊 Analytics"]
 page_keys   = ["Home", "Prediction", "Analytics"]
-current_idx = page_keys.index(st.session_state.current_page) if st.session_state.current_page in page_keys else 0
 
-selected = st.sidebar.radio("Navigate", page_labels, index=current_idx, label_visibility="collapsed")
+# Check if current page is valid
+if st.session_state.current_page not in page_keys:
+    st.session_state.current_page = "Home"
+
+current_idx = page_keys.index(st.session_state.current_page)
+
+# Radio Navigation
+selected = st.sidebar.radio(
+    "Navigate", 
+    page_labels, 
+    index=current_idx, 
+    label_visibility="collapsed"
+)
+
+# Update session state
 st.session_state.current_page = page_keys[page_labels.index(selected)]
+# # ─── NAVIGATION (FIXED TEXT VISIBILITY) ─────────────────────────
+
+# st.sidebar.markdown("""
+# <style>
+# /* 1. Base label style - ensure it's a block that can contain text */
+# section[data-testid="stSidebar"] div[role="radiogroup"] label {
+#     background-color: rgba(255, 255, 255, 0.08) !important; 
+#     border: 1px solid #2a4a7a !important;
+#     border-radius: 12px !important;
+#     padding: 0.7rem 1rem !important;
+#     margin-bottom: 8px !important;
+#     display: flex !important;
+#     align-items: center !important;
+#     width: 100% !important;
+#     cursor: pointer !important;
+# }
+
+# /* 2. CRITICAL: Force the text container to be visible after a click */
+# section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] {
+#     display: block !important;
+#     visibility: visible !important;
+#     opacity: 1 !important;
+# }
+
+# /* 3. Force the actual page name text to be white */
+# section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+#     color: #ffffff !important;
+#     font-size: 0.95rem !important;
+#     font-weight: 600 !important;
+#     opacity: 1 !important;
+#     visibility: visible !important;
+#     margin: 0 !important;
+#     display: block !important;
+# }
+
+# /* 4. Selected state gradient */
+# section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+#     background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+#     border-color: #818cf8 !important;
+#     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
+# }
+
+# /* 5. Hide the default ugly radio circle */
+# section[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
+#     display: none !important;
+# }
+# </style>
+# """, unsafe_allow_html=True)
+# page_labels = ["🏠 Home", "🔮 Churn Prediction", "📊 Analytics"]
+# page_keys   = ["Home", "Prediction", "Analytics"]
+# current_idx = page_keys.index(st.session_state.current_page) if st.session_state.current_page in page_keys else 0
+
+# selected = st.sidebar.radio("Navigate", page_labels, index=current_idx, label_visibility="collapsed")
+# st.session_state.current_page = page_keys[page_labels.index(selected)]
 
 st.sidebar.markdown("---")
 
