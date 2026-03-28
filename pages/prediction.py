@@ -70,22 +70,39 @@ def configure_gemini():
 
 def generate_retention_strategy(customer_data, churn_prob, top_factors):
     if not configure_gemini():
-        return "⚠️ Gemini API key not configured. Please check your .env file."
+        return "⚠️ Gemini API key not configured. Please add it to your .env file."
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash') # Using stable flash model
+        model = genai.GenerativeModel('gemini-2.5-flash-lite')
+
         prompt = f"""
         You are an E-commerce retention strategist. A customer has a {churn_prob:.1%} churn probability.
-        Customer Profile: {customer_data}
+
+        Customer Profile:
+        - Tenure: {customer_data.get('Tenure', 'N/A')} months
+        - Cashback: ${customer_data.get('CashbackAmount', 'N/A')}
+        - Complaints: {customer_data.get('Complain', 'N/A')}
+        - Days Since Last Order: {customer_data.get('DaySinceLastOrder', 'N/A')}
+        - Preferred Category: {customer_data.get('PreferredOrderCat', 'N/A')}
+
         Top Risk Factors: {', '.join(top_factors)}
 
-        Provide 3-5 specific, actionable retention strategies in bullet points. Be concise.
-        Include why each strategy targets the risk factors and the expected outcomes.
+        Provide specific, actionable retention strategies in bullet points. Be concise.
+
+        Include:
+        - 3-5 immediate actions (with specific offers/discounts)
+        - Why each strategy targets the risk factors
+        - Expected outcomes
+
+        Keep it under 150 words total.
         """
+
         response = model.generate_content(prompt)
         return response.text
+
     except Exception as e:
-        return f"⚠️ AI Analysis error: {str(e)}"
+        return f"⚠️ Error generating strategy: {str(e)}"
+
 
 # ─── MAIN PAGE ───────────────────────────────────────────────────
 def show_prediction_page():
