@@ -8,11 +8,13 @@
 }
 
 /* ═══════════════════════════════════════════════
-   HEADER & SIDEBAR CONTROLS
+   HEADER & SIDEBAR CONTROLS (TOP LINE FIX)
 ═══════════════════════════════════════════════ */
 header[data-testid="stHeader"] {
     background: #050d1a !important;
-    border-bottom: 1px solid #1e3a5f !important;
+    border-bottom: none !important; /* Removes the thin line */
+    box-shadow: none !important;
+    height: 0px !important; /* Forces the header gap to collapse */
 }
 
 /* Hide Streamlit default UI elements */
