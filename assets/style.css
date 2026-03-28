@@ -608,92 +608,49 @@ pre {
     border-radius: 10px !important;
     padding: 1rem !important;
 }
+
 /* ═══════════════════════════════════════════════
-   FINAL FIX: FORCE SIDEBAR RADIO TEXT VISIBILITY
-   (Overrides EVERYTHING above)
+   FIXED SIDEBAR NAVIGATION BUTTONS
 ═══════════════════════════════════════════════ */
 
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    color: #e2e8f0 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label span,
-section[data-testid="stSidebar"] div[role="radiogroup"] label p,
-section[data-testid="stSidebar"] div[role="radiogroup"] label div {
-    color: #e2e8f0 !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-/* Selected item highlight */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) span,
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p,
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div {
-    color: #a5b4fc !important;
-    font-weight: 700 !important;
-}
-
-/* Radio accent color */
-section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
-    accent-color: #6366f1 !important;
-}
-/* ═══════════════════════════════════════════════
-   FINAL SIDEBAR NAV (CLEAN + WORKING)
-═══════════════════════════════════════════════ */
-
-section[data-testid="stSidebar"] [data-baseweb="radio"] {
+/* 1. Hide the default radio circle and 'Navigate' text */
+[data-testid="stSidebar"] .stRadio > label,
+[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
     display: none !important;
 }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 0 0.8rem;
+/* 2. Style the Button Boxes */
+[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background-color: rgba(255, 255, 255, 0.05) !important; 
+    border: 1px solid #1e3a5f !important;
+    border-radius: 12px !important;
+    padding: 0.8rem 1.2rem !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid #2a4a7a;
-    border-radius: 12px;
-    padding: 0.7rem 1rem;
-
+/* 3. CRITICAL: Force the text to be visible (Fixed your empty boxes) */
+[data-testid="stSidebar"] div[role="radiogroup"] label p {
     color: #ffffff !important;
-    font-size: 0.95rem;
-    font-weight: 600;
-
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    cursor: pointer;
-    transition: all 0.2s ease;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* Text always visible */
-section[data-testid="stSidebar"] div[role="radiogroup"] label * {
-    color: #ffffff !important;
+/* 4. Selected State */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    border-color: #818cf8 !important;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
 }
 
-/* Hover */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background: rgba(99,102,241,0.25);
-    border-color: #6366f1;
-    transform: translateX(3px);
-}
-
-/* Selected */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    border-color: #818cf8;
-    box-shadow: 0 4px 20px rgba(99,102,241,0.5);
-}
-
-/* Hide "Navigate" */
-[data-testid="stSidebar"] .stRadio > label {
-    display: none !important;
+[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+    border-color: #6366f1 !important;
 }
