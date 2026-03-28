@@ -43,10 +43,6 @@ button[kind="header"] {
    FIX 2: Navigation radio buttons — show text
 ═══════════════════════════════════════════════ */
 
-/* Remove default Streamlit radio pill/circle */
-[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] {
-    display: none !important;
-}
 
 /* Target the actual label container */
 [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
@@ -198,32 +194,6 @@ button[kind="header"] {
 [data-testid="stSidebarContent"] {
     background: transparent !important;
     padding: 0 !important;
-}
-
-/* Sidebar radio buttons */
-[data-testid="stSidebar"] .stRadio label {
-    background: transparent !important;
-    color: #94a3b8 !important;
-    padding: 0.6rem 1rem !important;
-    border-radius: 8px !important;
-    margin: 2px 0 !important;
-    transition: all 0.2s ease !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    display: block !important;
-}
-
-[data-testid="stSidebar"] .stRadio label:hover {
-    background: rgba(99, 102, 241, 0.15) !important;
-    color: #e2e8f0 !important;
-}
-
-[data-testid="stSidebar"] .stRadio [data-checked="true"] label,
-[data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) {
-    background: linear-gradient(90deg, rgba(99,102,241,0.25), rgba(99,102,241,0.05)) !important;
-    color: #a5b4fc !important;
-    border-left: 3px solid #6366f1 !important;
 }
 
 /* Hide default radio circles */
@@ -606,25 +576,61 @@ pre {
     border: 1px solid #1e3a5f !important;
     border-radius: 10px !important;
     padding: 1rem !important;
-}/* ═══════════════════════════════════════════════
-   CLEANUP: KILL THE KEYBOARD_ARROW TEXT
+}
+/* ═══════════════════════════════════════════════
+    FINAL NAVIGATION FIX: BUTTONS & TEXT
 ═══════════════════════════════════════════════ */
 
-/* Target the specific container that leaks system text */
-section[data-testid="stSidebar"] [data-baseweb="radio"] div,
-section[data-testid="stSidebar"] [data-baseweb="radio"] span,
-section[data-testid="stSidebar"] .st-emotion-cache-6q9sum {
-    font-size: 0 !important;
-    line-height: 0 !important;
-    color: transparent !important;
+/* 1. Hide default radio circles and system 'keyboard_arrow' text */
+[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] span:not([data-testid="stMarkdownContainer"]) {
     display: none !important;
+    font-size: 0 !important;
+    visibility: hidden !important;
 }
 
-/* BUT keep the actual page name (p tag) visible */
+/* 2. Create the Button Boxes */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid #1e3a5f !important;
+    border-radius: 12px !important;
+    padding: 0.7rem 1rem !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+/* 3. Hover Effect */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+    border-color: #6366f1 !important;
+}
+
+/* 4. FORCE TEXT VISIBILITY (The Page Names) */
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    font-size: 0.95rem !important;
     color: #ffffff !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
     display: block !important;
     visibility: visible !important;
-    line-height: normal !important;
+    opacity: 1 !important;
+    line-height: 1.2 !important;
+}
+
+/* 5. Selected Item Styling (Indigo Glow) */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    border-color: #818cf8 !important;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Ensure selected text stays bright white */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
+    color: #ffffff !important;
+    font-weight: 700 !important;
 }
