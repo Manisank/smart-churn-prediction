@@ -859,44 +859,55 @@ st.sidebar.markdown(f"""
 
 st.sidebar.markdown("""
 <style>
-/* 1. Reset the radio button container */
-section[data-testid="stSidebar"] div[role="radiogroup"] {
+/* 1. Reset the radio group container */
+[data-testid="stSidebar"] div[role="radiogroup"] {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 10px !important;
+    padding-top: 1rem !important;
 }
 
-/* 2. Style the boxes */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
+/* 2. Style the Button Boxes */
+[data-testid="stSidebar"] div[role="radiogroup"] label {
     background-color: rgba(255, 255, 255, 0.05) !important; 
     border: 1px solid #1e3a5f !important;
     border-radius: 12px !important;
-    padding: 0.7rem 1rem !important;
+    padding: 0.8rem 1.2rem !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: flex-start !important; /* Align text to left */
     width: 100% !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
 }
 
-/* 3. THE FIX: Force the Page Name Text to be Visible and White */
-section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+/* 3. THE MAGIC FIX: This forces the text to be visible and white */
+[data-testid="stSidebar"] div[role="radiogroup"] label p {
     color: #ffffff !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
     margin: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: 1.4 !important;
+    text-shadow: none !important;
 }
 
-/* 4. Hide the default radio circle */
-section[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
+/* 4. Ensure the container doesn't collapse the text */
+[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+}
+
+/* 5. Hide ONLY the default radio dot */
+[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] div:first-child {
     display: none !important;
 }
 
-/* 5. Selected state */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+/* 6. Selected state styling */
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
     background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
     border-color: #818cf8 !important;
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
