@@ -581,13 +581,7 @@ pre {
     FINAL NAVIGATION FIX: BUTTONS & TEXT
 ═══════════════════════════════════════════════ */
 
-/* 1. Hide default radio circles and system 'keyboard_arrow' text */
-[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] > div:first-child,
-[data-testid="stSidebar"] div[role="radiogroup"] [data-baseweb="radio"] span:not([data-testid="stMarkdownContainer"]) {
-    display: none !important;
-    font-size: 0 !important;
-    visibility: hidden !important;
-}
+
 
 /* 2. Create the Button Boxes */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
