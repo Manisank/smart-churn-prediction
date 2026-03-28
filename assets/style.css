@@ -5,17 +5,19 @@
 
 * {
     font-family: 'Inter', sans-serif !important;
+    box-sizing: border-box !important;
 }
 
 /* ═══════════════════════════════════════════════
-   HEADER & SIDEBAR CONTROLS
+   HEADER & SIDEBAR CONTROLS (LINE FIX)
 ═══════════════════════════════════════════════ */
 header[data-testid="stHeader"] {
     background: #050d1a !important;
-    border-bottom: 1px solid #1e3a5f !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    height: 0px !important; /* Forces the top line to vanish */
 }
 
-/* Hide Streamlit default UI elements */
 [data-testid="collapsedControl"], 
 button[kind="header"], 
 [data-testid="baseButton-header"], 
@@ -52,74 +54,113 @@ button[kind="header"],
     padding: 0 !important;
 }
 
-[data-testid="stSidebar"] hr {
-    border-color: #1e3a5f !important;
-    margin: 0.8rem 0 !important;
+/* ═══════════════════════════════════════════════
+   AUTH PAGE: PREMIUM FLOATING TABS & BUTTONS
+═══════════════════════════════════════════════ */
+
+/* 1. The Tabs Bar (Dark Navy Container) */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    background: #0a1628 !important;
+    border: 1px solid #1e3a5f !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    gap: 8px !important;
+    height: 54px !important; 
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* 2. Individual Tab Styling */
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 10px !important;
+    height: 42px !important; 
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 24px !important;
+    color: #94a3b8 !important; 
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+/* 3. SELECTED Tab (Solid Indigo Background) */
+[data-testid="stTabs"] [aria-selected="true"] {
+    background: #6366f1 !important; 
+    color: #ffffff !important; 
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 4. Hide default orange underline */
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+    display: none !important;
+}
+
+/* 5. Main Login Button (High Contrast White) */
+.stApp [data-testid="stForm"] .stButton > button {
+    background: #ffffff !important; 
+    color: #050d1a !important; 
+    border-radius: 10px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-top: 15px !important;
+    width: 100% !important;
 }
 
 /* ═══════════════════════════════════════════════
-   CLEAN HYBRID NAV (FIXED TEXT VISIBILITY)
+   CLEAN HYBRID NAV (SIDEBAR BUTTONS)
 ═══════════════════════════════════════════════ */
-
-/* 1. Hide the "Navigation" header text */
 [data-testid="stSidebarNavigation"] > label, 
 [data-testid="stSidebar"] .stRadio > label {
     display: none !important;
 }
 
-/* 2. Item container spacing */
 [data-testid="stSidebar"] div[role="radiogroup"] {
-    gap: 12px !important;
+    gap: 10px !important;
     padding: 0.8rem !important;
     display: flex !important;
     flex-direction: column !important;
 }
 
-/* 3. The Blue Box around each option */
 [data-testid="stSidebar"] div[role="radiogroup"] label {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid #1e3a5f !important;
     border-radius: 12px !important;
-    padding: 12px 15px !important;
+    min-height: 48px !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
     width: 100% !important;
     display: flex !important;
-    align-items: center !important;
+    align-items: center !important; 
+    justify-content: flex-start !important;
+    padding: 0 15px !important;
 }
 
-/* 4. FORCE ALL TEXT INSIDE TO BE VISIBLE */
 [data-testid="stSidebar"] div[role="radiogroup"] label * {
     color: #ffffff !important;
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
     font-weight: 600 !important;
     opacity: 1 !important;
     visibility: visible !important;
-    display: inline-block !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
 }
 
-/* 5. Selected State Highlight */
 [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
     border-color: #6366f1 !important;
     background: rgba(99, 102, 241, 0.15) !important;
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2) !important;
 }
 
-/* 6. Theme-matching Radio Circles */
 [data-testid="stSidebar"] input[type="radio"] {
     accent-color: #6366f1 !important;
-}
-
-/* ═══════════════════════════════════════════════
-   HEADINGS & TEXT
-═══════════════════════════════════════════════ */
-h1, h2, h3, h4, h5, h6 {
-    color: #e2e8f0 !important;
-    font-weight: 700 !important;
-}
-
-p, span, label, div {
-    color: #cbd5e1 !important;
+    margin-right: 12px !important;
 }
 
 /* ═══════════════════════════════════════════════
@@ -130,6 +171,7 @@ p, span, label, div {
     border: 1px solid #1e3a5f !important;
     border-radius: 8px !important;
     color: #e2e8f0 !important;
+    height: 45px !important;
     padding: 0.6rem 0.9rem !important;
 }
 
@@ -138,26 +180,8 @@ p, span, label, div {
     box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
 }
 
-.stSelectbox > div > div {
-    background: #0f2040 !important;
-    border: 1px solid #1e3a5f !important;
-    border-radius: 8px !important;
-}
-
 /* ═══════════════════════════════════════════════
-   BUTTONS
-═══════════════════════════════════════════════ */
-.stButton > button {
-    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-    color: #ffffff !important;
-    border-radius: 10px !important;
-    padding: 0.65rem 1.5rem !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important;
-}
-
-/* ═══════════════════════════════════════════════
-   METRICS
+   METRICS & TABS PANELS
 ═══════════════════════════════════════════════ */
 [data-testid="stMetric"] {
     background: linear-gradient(135deg, #0f2040, #0a1628) !important;
@@ -172,16 +196,7 @@ p, span, label, div {
     font-weight: 800 !important;
 }
 
-/* ═══════════════════════════════════════════════
-   TABS
-═══════════════════════════════════════════════ */
-.stTabs [data-baseweb="tab-list"] {
-    background: #0a1628 !important;
-    border: 1px solid #1e3a5f !important;
-    border-radius: 10px !important;
+.stTabs [data-baseweb="tab-panel"] {
+    background: transparent !important;
+    padding: 1.5rem 0 !important;
 }
-
-.stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-    color: #ffffff !important;
-}s
