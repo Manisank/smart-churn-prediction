@@ -9,6 +9,8 @@ font = "sans serif"
 headless = true
 port = 8501
 enableCORS = false
+# ─── ADD THIS LINE TO FIX THE CRASH ───
+fileWatcherType = "none"
 
 [runner]
 magicEnabled = false
